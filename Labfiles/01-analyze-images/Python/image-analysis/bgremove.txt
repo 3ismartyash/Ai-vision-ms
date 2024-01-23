@@ -1,0 +1,29 @@
+# Remove the background from the image or generate a foreground matte
+    print('\nRemove the background from the image or generate a foreground matte')
+    image = sdk.VisionSource(image_file)
+    analysis_options = sdk.ImageAnalysisOptions()
+
+    # Set the image analysis segmentation mode to background or foreground
+    analysis_options.segmentation_mode = sdk.ImageSegmentationMode.BACKGROUND_REMOVAL
+    image_analyzer = sdk.ImageAnalyzer(cv_client, image, analysis_options)
+    result = image_analyzer.analyze()
+
+    if result.reason == sdk.ImageAnalysisResultReason.ANALYZED:
+        image_buffer = result.segmentation_result.image_buffer
+        print(" Segmentation result:")
+        print(" Output image buffer size (bytes) = {}".format(len(image_buffer)))
+        print(" Output image height = {}".format(result.segmentation_result.image_height))
+        print(" Output image width = {}".format(result.segmentation_result.image_width))
+
+        output_image_file = "newimage.jpg"
+        with open(output_image_file, 'wb') as binary_file:
+            binary_file.write(image_buffer)
+        print(" File {} written to disk".format(output_image_file))
+
+    else:
+        error_details = sdk.ImageAnalysisErrorDetails.from_result(result)
+        print(" Analysis failed.")
+        print(" Error reason: {}".format(error_details.reason))
+        print(" Error code: {}".format(error_details.error_code))
+        print(" Error message: {}".format(error_details.message))
+        print(" Did you set the computer vision endpoint and key?")
